@@ -1,17 +1,9 @@
 import axios from 'axios'
 import cheerio from 'cheerio'
 import { Request, Response } from 'express'
-import { Subject, VIETCETERA_HOMEPAGE } from './types'
+import { Subject, VIETCETERA_HOMEPAGE, FACEBOOK_SEND_MESSAGE_URL, FACEBOOK_VERIFIED_TOKEN } from './types'
 
-export async function execute(req: Request, res: Response): Promise<Response> {
-    let subject = req.query.subject as string
-
-    if (!Subject.has(subject)) {
-        return res.status(500).json({
-            message: "Xin loi chatbot ko ho tro chuyen muc nay."
-        })
-    }
-
+export async function crawl(subject: string): Promise<string> {
     subject = Subject.get(subject)
 
     const url = VIETCETERA_HOMEPAGE + subject
@@ -24,10 +16,29 @@ export async function execute(req: Request, res: Response): Promise<Response> {
             .find("div[id='listNewArticle'] > div[id='listPopularArticleMobile'] > div[class='ant-card verticle-card verticle-card-md ant-card-bordered']")
             .find("div[class='ant-card-body']").find('a').attr('href')
 
-        return res.status(200).json({ url: `https://vietcetera.com/vn/chuyen-muc` + searchResult })
+        if (!searchResult) {
+            return `we don't support this type.`
+        }
+
+        return `https://vietcetera.com/vn/chuyen-muc` + searchResult
 
     }
     catch (error) {
         console.log(error)
     }
+}
+
+export type ResponseInput = {
+    messaging_type: string,
+    recipient: { id: string },
+    message: { text: string }
+}
+
+export async function sendMessage(data: ResponseInput): Promise<void> {
+    console.log(`post data`)
+    const url = `${FACEBOOK_SEND_MESSAGE_URL}=${FACEBOOK_VERIFIED_TOKEN}`
+    const response = await axios.post(url, data, {
+        headers: { "Content-Type": "application/json" }
+    })
+    console.log(response)
 }

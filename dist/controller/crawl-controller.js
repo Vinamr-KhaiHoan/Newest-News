@@ -12,18 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.execute = void 0;
+exports.sendMessage = exports.crawl = void 0;
 const axios_1 = __importDefault(require("axios"));
 const cheerio_1 = __importDefault(require("cheerio"));
 const types_1 = require("./types");
-function execute(req, res) {
+function crawl(subject) {
     return __awaiter(this, void 0, void 0, function* () {
-        let subject = req.query.subject;
-        if (!types_1.Subject.has(subject)) {
-            return res.status(500).json({
-                message: "Xin loi chatbot ko ho tro chuyen muc nay."
-            });
-        }
         subject = types_1.Subject.get(subject);
         const url = types_1.VIETCETERA_HOMEPAGE + subject;
         try {
@@ -33,12 +27,26 @@ function execute(req, res) {
                 .find("div[id='__next'] > main[class='layout-content ant-layout-content'] > div[class='wrap-content'] > div[class='category-page']")
                 .find("div[id='listNewArticle'] > div[id='listPopularArticleMobile'] > div[class='ant-card verticle-card verticle-card-md ant-card-bordered']")
                 .find("div[class='ant-card-body']").find('a').attr('href');
-            return res.status(200).json({ url: `https://vietcetera.com/vn/chuyen-muc` + searchResult });
+            if (!searchResult) {
+                return `we don't support this type.`;
+            }
+            return `https://vietcetera.com/vn/chuyen-muc` + searchResult;
         }
         catch (error) {
             console.log(error);
         }
     });
 }
-exports.execute = execute;
+exports.crawl = crawl;
+function sendMessage(data) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`post data`);
+        const url = `${types_1.FACEBOOK_SEND_MESSAGE_URL}=${types_1.FACEBOOK_VERIFIED_TOKEN}`;
+        const response = yield axios_1.default.post(url, data, {
+            headers: { "Content-Type": "application/json" }
+        });
+        console.log(response);
+    });
+}
+exports.sendMessage = sendMessage;
 //# sourceMappingURL=crawl-controller.js.map

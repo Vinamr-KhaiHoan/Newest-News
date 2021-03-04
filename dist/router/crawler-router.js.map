@@ -1,1 +1,1 @@
-{"version":3,"file":"crawler-router.js","sourceRoot":"","sources":["../../src/router/crawler-router.ts"],"names":[],"mappings":";;;;;;AAAA,sDAA6B;AAC7B,qEAAwD;AAExD,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAA;AAItB,wBAAM;AAFf,MAAM,CAAC,GAAG,CAAC,OAAO,EAAE,0BAAO,CAAC,CAAA"}
+{"version":3,"file":"crawler-router.js","sourceRoot":"","sources":["../../src/router/crawler-router.ts"],"names":[],"mappings":";;;;;;AAAA,sDAA6B;AAC7B,qEAAsD;AAEtD,MAAM,WAAW,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAA;AAI3B,kCAAW;AAFpB,WAAW,CAAC,GAAG,CAAC,QAAQ,EAAE,wBAAK,CAAC,CAAA"}
