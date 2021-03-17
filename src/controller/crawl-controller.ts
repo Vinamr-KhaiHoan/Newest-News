@@ -20,7 +20,7 @@ export async function crawl(subject: string): Promise<string> {
             return `we don't support this type.`
         }
 
-        return `https://vietcetera.com/vn/chuyen-muc` + searchResult
+        return `vietcetera.com` + searchResult
 
     }
     catch (error) {
