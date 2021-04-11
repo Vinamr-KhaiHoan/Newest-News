@@ -12,40 +12,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMessage = exports.crawl = void 0;
+exports.sendMessage = exports.crawlAll = void 0;
 const axios_1 = __importDefault(require("axios"));
-const cheerio_1 = __importDefault(require("cheerio"));
 const types_1 = require("./types");
-function crawl(subject) {
+const vietcetera_crawl_controller_1 = require("./vietceteta-crawl-controller/vietcetera-crawl-controller");
+const vnexpress_crawl_controller_1 = require("./vnexpress-crawl-controller/vnexpress-crawl-controller");
+function crawlAll(subject) {
     return __awaiter(this, void 0, void 0, function* () {
-        subject = types_1.Subject.get(subject);
-        const url = types_1.VIETCETERA_HOMEPAGE + subject;
-        try {
-            const { data } = yield axios_1.default.get(url);
-            const selector = cheerio_1.default.load(data);
-            const searchResult = selector("body")
-                .find("div[id='__next'] > main[class='layout-content ant-layout-content'] > div[class='wrap-content'] > div[class='category-page']")
-                .find("div[id='listNewArticle'] > div[id='listPopularArticleMobile'] > div[class='ant-card verticle-card verticle-card-md ant-card-bordered']")
-                .find("div[class='ant-card-body']").find('a').attr('href');
-            if (!searchResult) {
-                return `we don't support this type.`;
-            }
-            return `vietcetera.com` + searchResult;
+        let url = [];
+        const vietceteraUrl = yield vietcetera_crawl_controller_1.crawlVietcetera(subject);
+        if (vietceteraUrl) {
+            url.push(vietceteraUrl);
         }
-        catch (error) {
-            console.log(error);
+        const vnexpressUrl = yield vnexpress_crawl_controller_1.crawlVnexpress(subject);
+        if (vnexpressUrl) {
+            url.push(vnexpressUrl);
         }
+        return url;
     });
 }
-exports.crawl = crawl;
+exports.crawlAll = crawlAll;
 function sendMessage(data) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`post data`);
         const url = `${types_1.FACEBOOK_SEND_MESSAGE_URL}=${types_1.FACEBOOK_VERIFIED_TOKEN}`;
+        console.log(`url: `, url, `data `, data);
         const response = yield axios_1.default.post(url, data, {
             headers: { "Content-Type": "application/json" }
         });
-        console.log(response);
     });
 }
 exports.sendMessage = sendMessage;

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { VERIFIED_WEBHOOK_CODE, FacebookMessageInputAttributes, FacebookMessageData, FacebookMessage } from "./types";
-import { crawl, sendMessage, ResponseInput } from "./crawl-controller";
+import { VERIFIED_WEBHOOK_CODE, FacebookMessageInputAttributes, FacebookMessageData, FacebookMessage, ResponseInput } from "./types";
+import { crawlAll, sendMessage } from "./crawl-controller";
+
 import axios from "axios"
 
 export async function verifyWebhook(req: Request, res: Response): Promise<Response> {
@@ -19,24 +20,30 @@ export async function verifyWebhook(req: Request, res: Response): Promise<Respon
 export async function recieveAndSend(req: Request, res: Response): Promise<Response> {
     try {
         const entries = req.body.entry;
-
+        console.log(`entries thay hung: `, entries)
         for (var entry of entries) {
             var messaging = entry.messaging;
             for (var message of messaging) {
+                console.log(`messaging: `, message)
                 var senderId = message.sender.id;
                 if (message.message) {
+                    console.log(`message: `, message)
                     // If user send text
                     if (message.message.text) {
                         var text = message.message.text;
                         console.log(text);
-                        const url = await crawl(text)
-                        console.log(url)
-                        const data: ResponseInput = {
-                            messaging_type: "RESPONSE",
-                            recipient: { id: senderId },
-                            message: { text: url }
-                        }
-                        await sendMessage(data)
+                        const urls = await crawlAll(text)
+                        console.log(urls)
+                        const promises = urls.map(async url => {
+                            const data: ResponseInput = {
+                                messaging_type: "RESPONSE",
+                                recipient: { id: senderId },
+                                message: { text: url }
+                            }
+                            await sendMessage(data)
+                        })
+
+                        const solved = await Promise.all(promises)
                     }
                 }
             }
@@ -49,10 +56,3 @@ export async function recieveAndSend(req: Request, res: Response): Promise<Respo
     }
 }
 
-import { crawlTest } from './vnexpress-crawl-controller/vnexpress-crawl-controller'
-
-export async function test(req: Request, res: Response): Promise<Response> {
-    const result = await crawlTest
-
-    return res.status(200).json({ message: result })
-}

@@ -29,53 +29,33 @@ function recieveAndSend(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const entries = req.body.entry;
+            console.log(`entries thay hung: `, entries);
             for (var entry of entries) {
                 var messaging = entry.messaging;
                 for (var message of messaging) {
+                    console.log(`messaging: `, message);
                     var senderId = message.sender.id;
                     if (message.message) {
+                        console.log(`message: `, message);
                         // If user send text
                         if (message.message.text) {
                             var text = message.message.text;
                             console.log(text);
-                            const url = yield crawl_controller_1.crawl(text);
-                            console.log(url);
-                            const data = {
-                                messaging_type: "RESPONSE",
-                                recipient: { id: senderId },
-                                message: { text: url }
-                            };
-                            yield crawl_controller_1.sendMessage(data);
+                            const urls = yield crawl_controller_1.crawlAll(text);
+                            console.log(urls);
+                            const promises = urls.map((url) => __awaiter(this, void 0, void 0, function* () {
+                                const data = {
+                                    messaging_type: "RESPONSE",
+                                    recipient: { id: senderId },
+                                    message: { text: url }
+                                };
+                                yield crawl_controller_1.sendMessage(data);
+                            }));
+                            const solved = yield Promise.all(promises);
                         }
                     }
                 }
             }
-            // console.log(req.body)
-            // // // console.log(req.body.entry[0].messaging[0])
-            // // console.log(`running`)
-            // const body = req.body as FacebookMessageInputAttributes
-            // const entries = body.entry
-            // console.log(entries)
-            // // return
-            // let messagings: FacebookMessageData[][]
-            // entries.forEach(entry => {
-            //     console.log(entry)
-            //     console.log(entry.messaging)
-            //     messagings.push(entry.messaging)
-            // })
-            // console.log(messagings)
-            // // for (let messaging of messagings) {
-            // //     const senderID = messaging.sender
-            // //     const message = messaging.message
-            // //     console.log(message)
-            // // const url = await crawl(message.text)
-            // // const dataInput: ResponseInput = {
-            // //     message_type: "RESPONSE",
-            // //     recipient: senderID,
-            // //     message: { text: url }
-            // // }
-            // // await sendMessage(dataInput)
-            // // }
             return res.status(200).send('EVENT_RECEIVED');
         }
         catch (error) {
